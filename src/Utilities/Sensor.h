@@ -11,6 +11,7 @@ class Sensor {
     public:
         Sensor(uint8_t ID, std::string descriptor, bool isEnabled = true)
             : _ID(ID), _descriptor(descriptor), _isEnabled(isEnabled) {}
+        virtual ~Sensor();
 
         uint8_t     ID()         const {return _ID;}
         std::string descriptor() const {return _descriptor;}
@@ -21,7 +22,7 @@ class Sensor {
 
         void setEnabled(bool enable) {_isEnabled = enable;}
 
-        Eigen::Matrix<double, OUTPUT_DIM, 1> getOutput() = 0;
+        virtual Eigen::Matrix<double, OUTPUT_DIM, 1> getOutput() = 0;
     private:
         const uint8_t     _ID;
         const std::string _descriptor;

@@ -1,0 +1,6 @@
+[submodule "src/Dependencies/DistributedSharedMemory"]
+	path = src/Dependencies/DistributedSharedMemory
+	url = git@github.com:rahulsalvi/DistributedSharedMemory.git
+[submodule "src/Dependencies/UnscentedKalmanFilter"]
+	path = src/Dependencies/UnscentedKalmanFilter
+	url = git@github.com:rahulsalvi/UnscentedKalmanFilter.git
