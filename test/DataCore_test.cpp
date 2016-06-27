@@ -21,7 +21,6 @@ int main() {
 
     isRunning = true;
     while(isRunning.load() && !_client.doesLocalExist(key)) {}
-    //_client.registerLocalBuffer(key, _client.doesLocalExist(key), false);
 
     struct SensorData {
         double accelerometer[3];

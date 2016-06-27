@@ -5,6 +5,7 @@
 #include <atomic>
 
 #include <boost/shared_ptr.hpp>
+
 #include <eigen3/Eigen/Core>
 
 #include "../Utilities/Sensor.h"
@@ -25,6 +26,7 @@ class DataCore {
                  PressureSensor pressureSensor,
                  uint8_t serverID,
                  uint8_t clientID);
+        ~DataCore() {}
 
         void start();
         void stop();

@@ -15,7 +15,7 @@ class Sensor {
 
         uint8_t     ID()         const {return _ID;}
         std::string descriptor() const {return _descriptor;}
-        bool        isEnabled()        {return _isEnabled;}
+        bool        isEnabled()  const {return _isEnabled;}
 
         void disable() {_isEnabled = false;}
         void enable()  {_isEnabled = true;}

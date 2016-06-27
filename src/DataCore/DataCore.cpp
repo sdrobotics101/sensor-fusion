@@ -22,6 +22,7 @@ DataCore::DataCore(
     }
     sensorData.pressureSensor = 0;
 
+    //TODO hardcoding the size here isn't bad, but figure it out first
     _client.registerLocalBuffer(_dataKey, 10*sizeof(double), false);
     _client.setLocalBufferContents(_dataKey, &sensorData);
 }
