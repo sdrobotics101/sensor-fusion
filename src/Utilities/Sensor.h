@@ -11,7 +11,7 @@ class Sensor {
     public:
         Sensor(uint8_t ID, std::string descriptor, bool isEnabled = true)
             : _ID(ID), _descriptor(descriptor), _isEnabled(isEnabled) {}
-        virtual ~Sensor();
+        virtual ~Sensor() {};
 
         uint8_t     ID()         const {return _ID;}
         std::string descriptor() const {return _descriptor;}
