@@ -57,7 +57,7 @@ class DataCore {
             double gyro[3];
             double magnetometer[3];
             double pressureSensor;
-        } sensorData;
+        } _sensorData;
 };
 
 #endif //DATACORE_H

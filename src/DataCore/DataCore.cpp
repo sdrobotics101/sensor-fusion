@@ -16,19 +16,19 @@ DataCore::DataCore(
         _isRunning(false)
 {
     for (int i = 0; i < 3; i++) {
-        sensorData.accelerometer[i] = 0;
-        sensorData.gyro[i] = 0;
-        sensorData.magnetometer[i] = 0;
+        _sensorData.accelerometer[i] = 0;
+        _sensorData.gyro[i] = 0;
+        _sensorData.magnetometer[i] = 0;
     }
-    sensorData.pressureSensor = 0;
+    _sensorData.pressureSensor = 0;
 
-    sensorData.isEnabled[ACCL] = _accelerometer->isEnabled();
-    sensorData.isEnabled[GYRO] = _gyro->isEnabled();
-    sensorData.isEnabled[MAGN] = _magnetometer->isEnabled();
-    sensorData.isEnabled[PRES] = _pressureSensor->isEnabled();
+    _sensorData.isEnabled[ACCL] = _accelerometer->isEnabled();
+    _sensorData.isEnabled[GYRO] = _gyro->isEnabled();
+    _sensorData.isEnabled[MAGN] = _magnetometer->isEnabled();
+    _sensorData.isEnabled[PRES] = _pressureSensor->isEnabled();
 
-    _client.registerLocalBuffer(_dataKey, sizeof(sensorData), false);
-    _client.setLocalBufferContents(_dataKey, &sensorData);
+    _client.registerLocalBuffer(_dataKey, sizeof(SensorData), false);
+    _client.setLocalBufferContents(_dataKey, &_sensorData);
 }
 
 void DataCore::start() {
@@ -37,47 +37,47 @@ void DataCore::start() {
         Eigen::Matrix<double, 3, 1> imuData;
         Eigen::Matrix<double, 1, 1> pressureData;
 
-        if ((sensorData.isEnabled[ACCL] = _accelerometer->isEnabled())) {
+        if ((_sensorData.isEnabled[ACCL] = _accelerometer->isEnabled())) {
             imuData = _accelerometer->getOutput();
-            sensorData.accelerometer[XAXIS] = imuData(XAXIS, 0);
-            sensorData.accelerometer[YAXIS] = imuData(YAXIS, 0);
-            sensorData.accelerometer[ZAXIS] = imuData(ZAXIS, 0);
+            _sensorData.accelerometer[XAXIS] = imuData(XAXIS, 0);
+            _sensorData.accelerometer[YAXIS] = imuData(YAXIS, 0);
+            _sensorData.accelerometer[ZAXIS] = imuData(ZAXIS, 0);
         } else {
-            sensorData.accelerometer[XAXIS] = 0;
-            sensorData.accelerometer[YAXIS] = 0;
-            sensorData.accelerometer[ZAXIS] = 0;
+            _sensorData.accelerometer[XAXIS] = 0;
+            _sensorData.accelerometer[YAXIS] = 0;
+            _sensorData.accelerometer[ZAXIS] = 0;
         }
 
-        if ((sensorData.isEnabled[GYRO] = _gyro->isEnabled())) {
+        if ((_sensorData.isEnabled[GYRO] = _gyro->isEnabled())) {
             imuData = _gyro->getOutput();
-            sensorData.gyro[XAXIS] = imuData(XAXIS, 0);
-            sensorData.gyro[YAXIS] = imuData(YAXIS, 0);
-            sensorData.gyro[ZAXIS] = imuData(ZAXIS, 0);
+            _sensorData.gyro[XAXIS] = imuData(XAXIS, 0);
+            _sensorData.gyro[YAXIS] = imuData(YAXIS, 0);
+            _sensorData.gyro[ZAXIS] = imuData(ZAXIS, 0);
         } else {
-            sensorData.gyro[XAXIS] = 0;
-            sensorData.gyro[YAXIS] = 0;
-            sensorData.gyro[ZAXIS] = 0;
+            _sensorData.gyro[XAXIS] = 0;
+            _sensorData.gyro[YAXIS] = 0;
+            _sensorData.gyro[ZAXIS] = 0;
         }
 
-        if ((sensorData.isEnabled[MAGN] = _magnetometer->isEnabled())) {
+        if ((_sensorData.isEnabled[MAGN] = _magnetometer->isEnabled())) {
             imuData = _magnetometer->getOutput();
-            sensorData.magnetometer[XAXIS] = imuData(XAXIS, 0);
-            sensorData.magnetometer[YAXIS] = imuData(YAXIS, 0);
-            sensorData.magnetometer[ZAXIS] = imuData(ZAXIS, 0);
+            _sensorData.magnetometer[XAXIS] = imuData(XAXIS, 0);
+            _sensorData.magnetometer[YAXIS] = imuData(YAXIS, 0);
+            _sensorData.magnetometer[ZAXIS] = imuData(ZAXIS, 0);
         } else {
-            sensorData.magnetometer[XAXIS] = 0;
-            sensorData.magnetometer[YAXIS] = 0;
-            sensorData.magnetometer[ZAXIS] = 0;
+            _sensorData.magnetometer[XAXIS] = 0;
+            _sensorData.magnetometer[YAXIS] = 0;
+            _sensorData.magnetometer[ZAXIS] = 0;
         }
 
-        if ((sensorData.isEnabled[PRES] = _pressureSensor->isEnabled())) {
+        if ((_sensorData.isEnabled[PRES] = _pressureSensor->isEnabled())) {
             pressureData = _pressureSensor->getOutput();
-            sensorData.pressureSensor = pressureData(0, 0);
+            _sensorData.pressureSensor = pressureData(0, 0);
         } else {
-            sensorData.pressureSensor = 0;
+            _sensorData.pressureSensor = 0;
         }
 
-        _client.setLocalBufferContents(_dataKey, &sensorData);
+        _client.setLocalBufferContents(_dataKey, &_sensorData);
         std::this_thread::sleep_for(std::chrono::milliseconds(DATACORE_DELAY));
     }
 }
