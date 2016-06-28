@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <atomic>
+#include <thread>
+#include <chrono>
 
 #include <boost/shared_ptr.hpp>
 
@@ -14,6 +16,13 @@
 #define XAXIS 0
 #define YAXIS 1
 #define ZAXIS 2
+
+#define ACCL 0
+#define GYRO 1
+#define MAGN 2
+#define PRES 3
+
+#define DATACORE_DELAY 10 //milliseconds
 
 class DataCore {
     public:
@@ -43,6 +52,7 @@ class DataCore {
         std::atomic<bool> _isRunning;
 
         struct SensorData {
+            bool   isEnabled[4];
             double accelerometer[3];
             double gyro[3];
             double magnetometer[3];

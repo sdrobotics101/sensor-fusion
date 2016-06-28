@@ -23,6 +23,7 @@ int main() {
     while(isRunning.load() && !_client.doesLocalExist(key)) {}
 
     struct SensorData {
+        bool   isEnabled[4];
         double accelerometer[3];
         double gyro[3];
         double magnetometer[3];
@@ -33,7 +34,11 @@ int main() {
         if (!_client.getLocalBufferContents(key, &sensorData)) {
             break;
         }
-        std::cout << "P: " << sensorData.pressureSensor << std::endl;
+        if (sensorData.isEnabled[3]) {
+            std::cout << "ENABLED P: " << sensorData.pressureSensor << std::endl;
+        } else {
+            std::cout << "DISABLED P: " << sensorData.pressureSensor << std::endl;
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     return 0;

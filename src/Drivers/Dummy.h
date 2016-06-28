@@ -7,7 +7,7 @@ template<int OUTPUT_DIM>
 class Dummy : public Sensor<OUTPUT_DIM> {
     public:
         Dummy(uint8_t ID, std::string descriptor) :
-            Sensor<OUTPUT_DIM>(ID, "dummy_"+descriptor) {
+            Sensor<OUTPUT_DIM>(ID, descriptor) {
                 for (int i = 0; i < OUTPUT_DIM; i++) {
                     _output(i, 0) = 0;
                 }
