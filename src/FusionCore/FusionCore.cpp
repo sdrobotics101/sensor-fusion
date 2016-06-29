@@ -67,6 +67,7 @@ void FusionCore::stop() {
     _isRunning = false;
 }
 
+//TODO should this update the gyro state using the control vector?
 FusionCore::angularStateVector FusionCore::angularStateTransfer(angularStateVector state, angularControlVector control, double dt) {
     Quaterniond quat;
     quat.w() = state(0,0);
@@ -75,6 +76,7 @@ FusionCore::angularStateVector FusionCore::angularStateTransfer(angularStateVect
     quat.z() = state(3,0);
 
     quat *= eulerToQuaternion(state(4,0)*dt, state(5,0)*dt, state(6,0)*dt);
+    quat.normalize();
 
     state(0,0) = quat.w();
     state(1,0) = quat.x();
@@ -87,6 +89,7 @@ FusionCore::angularMeasurementVector FusionCore::angularMeasurementTransfer(angu
     return state;
 }
 
+//TODO are directions correct?
 void FusionCore::angularThreadFunction() {
     posix_time::ptime tick = posix_time::second_clock::local_time();
     while (_isRunning.load()) {
@@ -126,13 +129,13 @@ void FusionCore::angularThreadFunction() {
         _angularData.pos[2] = current(2,0);
         _angularData.pos[3] = current(3,0);
 
-        _angularData.vel[0] = current(4,0);
-        _angularData.vel[1] = current(5,0);
-        _angularData.vel[2] = current(6,0);
+        _angularData.vel[XAXIS] = current(4,0);
+        _angularData.vel[YAXIS] = current(5,0);
+        _angularData.vel[ZAXIS] = current(6,0);
 
-        _angularData.acc[0] = (current(4,0) - previous(4,0)) / dt;
-        _angularData.acc[1] = (current(5,0) - previous(5,0)) / dt;
-        _angularData.acc[2] = (current(6,0) - previous(6,0)) / dt;
+        _angularData.acc[XAXIS] = (current(4,0) - previous(4,0)) / dt;
+        _angularData.acc[YAXIS] = (current(5,0) - previous(5,0)) / dt;
+        _angularData.acc[ZAXIS] = (current(6,0) - previous(6,0)) / dt;
 
         //update angular state through dsm client
         _client.setLocalBufferContents(_angularKey, &_angularData);
@@ -142,6 +145,7 @@ void FusionCore::angularThreadFunction() {
     }
 }
 
+//TODO needs to account for orientation
 void FusionCore::linearThreadFunction() {
     posix_time::ptime tick = posix_time::second_clock::local_time();
     while (_isRunning.load()) {
@@ -208,6 +212,8 @@ Quaterniond FusionCore::eulerToQuaternion(double x, double y, double z) {
     Eigen::AngleAxisd pitch(y, Vector3d::UnitY());
     Eigen::AngleAxisd yaw(z, Vector3d::UnitZ());
     Quaterniond quat = roll*pitch*yaw;
+    quat.normalize();
+
     return quat;
 }
 

@@ -17,13 +17,14 @@ void signalHandler(int signum) {
     _fusionCore->stop();
 }
 
+//TODO read from config file, etc
 int main() {
     Matrix<double, ANGULAR_STATE_DIM, 1> initialState;
     Matrix<double, ANGULAR_STATE_DIM, ANGULAR_STATE_DIM> initialCovariance;
     Matrix<double, ANGULAR_STATE_DIM, ANGULAR_STATE_DIM> processNoise;
     Matrix<double, ANGULAR_MEASUREMENT_DIM, ANGULAR_MEASUREMENT_DIM> measurementNoise;
 
-    //initalize those matrices
+    //initalize matrices
 
     _fusionCore.reset(new FusionCore(SERVER_ID,
                                      CLIENT_ID,

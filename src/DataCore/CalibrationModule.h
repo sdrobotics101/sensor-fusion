@@ -103,6 +103,7 @@ prompt(int which) {
     }
 }
 
+//TODO write to file
 template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
 void
 CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::
@@ -129,6 +130,7 @@ staticCalibrate() {
     }
 }
 
+//TODO
 template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
 void
 CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::

@@ -95,7 +95,7 @@ class FusionCore {
         boost::shared_mutex _sensorDataMutex;
 
         struct AngularData {
-            double pos[4];
+            double pos[4];  //4 because quaternions
             double vel[3];
             double acc[3];
         } _angularData;

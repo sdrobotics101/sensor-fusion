@@ -24,6 +24,7 @@ void signalHandler(int signum) {
     _dataCore->stop();
 }
 
+//TODO use program options for calibration mode and config file locations
 int main() {
     boost::array<boost::shared_ptr<Sensor<3>>, NUM_ACCL> accelerometers;
     for (int i = 0; i < NUM_ACCL; i++) {
