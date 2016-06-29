@@ -15,7 +15,7 @@ class MultiSensor : public Sensor<OUTPUT_DIM> {
     public:
         typedef boost::shared_ptr<Sensor<OUTPUT_DIM>> sensor;
 
-        MultiSensor(boost::array<sensor, NUM_SENSORS> sensors,
+        MultiSensor(boost::array<sensor, NUM_SENSORS>* sensors,
                     uint8_t ID,
                     std::string descriptor,
                     bool isEnabled = true);
@@ -33,7 +33,7 @@ class MultiSensor : public Sensor<OUTPUT_DIM> {
 
 template<int OUTPUT_DIM, int NUM_SENSORS>
 MultiSensor<OUTPUT_DIM, NUM_SENSORS>::
-MultiSensor(boost::array<sensor, NUM_SENSORS> sensors,
+MultiSensor(boost::array<sensor, NUM_SENSORS>* sensors,
             uint8_t ID,
             std::string descriptor,
             bool isEnabled) :
@@ -42,7 +42,7 @@ MultiSensor(boost::array<sensor, NUM_SENSORS> sensors,
                                isEnabled)
 {
     int enabledCount = 0;
-    for (auto s : sensors) {
+    for (auto s : *sensors) {
         if (!s) {
             continue;
         }
