@@ -9,6 +9,7 @@
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/shared_mutex.hpp>
+#include <boost/date_time.hpp>
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
@@ -27,10 +28,16 @@
 
 #define DATA_DELAY 10 //milliseconds
 #define ANGULAR_DELAY 10 //milliseconds
+#define LINEAR_DELAY 10 //milliseconds
+
+#define ATMOSPHERIC_PRESSURE_BAR 1.01325
+#define BARS_TO_METERS 10.1936
 
 using Eigen::Matrix;
 using Eigen::Vector3d;
 using Eigen::Quaterniond;
+
+namespace posix_time = boost::posix_time;
 
 class FusionCore {
     public:
@@ -59,11 +66,12 @@ class FusionCore {
         static angularMeasurementVector angularMeasurementTransfer(angularStateVector state);
 
         void angularThreadFunction();
-        /* void linearThreadFunction(); */
+        void linearThreadFunction();
 
         static Quaterniond rotationBetweenSystems(Vector3d x1, Vector3d y1, Vector3d z1,
                                                   Vector3d x2, Vector3d y2, Vector3d z2);
         static Quaterniond eulerToQuaternion(double x, double y, double z);
+        static double pressureToDepth(double pressure);
 
         dsm::Client _client;
         dsm::LocalBufferKey _angularKey;
@@ -71,9 +79,7 @@ class FusionCore {
         dsm::LocalBufferKey _dataKey;
 
         boost::scoped_ptr<boost::thread> _angularThread;
-        /* boost::scoped_ptr<boost::thread> _linearThread; */
-
-        angularMeasurementVector _angularMeasurement;
+        boost::scoped_ptr<boost::thread> _linearThread;
 
         UnscentedKalmanFilter<ANGULAR_STATE_DIM, ANGULAR_MEASUREMENT_DIM, ANGULAR_CONTROL_DIM> _angularFilter;
 
@@ -93,6 +99,12 @@ class FusionCore {
             double vel[3];
             double acc[3];
         } _angularData;
+
+        struct LinearData {
+            double pos[3];
+            double vel[3];
+            double acc[3];
+        } _linearData;
 };
 
 #endif //FUSIONCORE_H

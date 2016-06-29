@@ -20,7 +20,7 @@ FusionCore::FusionCore(uint8_t serverID,
                                       &FusionCore::angularMeasurementTransfer,
                                       processNoise,
                                       measurementNoise,
-                                      ANGULAR_DELAY,
+                                      0,
                                       kappa,
                                       alpha,
                                       beta),
@@ -32,21 +32,29 @@ FusionCore::FusionCore(uint8_t serverID,
         _angularData.pos[i] = 0;
         _angularData.vel[i] = 0;
         _angularData.acc[i] = 0;
+        _linearData.pos[i]  = 0;
+        _linearData.vel[i]  = 0;
+        _linearData.acc[i]  = 0;
     }
     _angularData.pos[3] = 0;
+
     _client.registerLocalBuffer(_angularKey, sizeof(AngularData), false);
     _client.setLocalBufferContents(_angularKey, &_angularData);
+
+    _client.registerLocalBuffer(_linearKey, sizeof(LinearData), false);
+    _client.setLocalBufferContents(_linearKey, &_linearData);
 }
 
 FusionCore::~FusionCore() {
     _isRunning = false;
     _angularThread->join();
-    //_linearThread->join();
+    _linearThread->join();
 }
 
 void FusionCore::start() {
     _isRunning = true;
     _angularThread.reset(new boost::thread(boost::bind(&FusionCore::angularThreadFunction, this)));
+    _linearThread .reset(new boost::thread(boost::bind(&FusionCore::linearThreadFunction,  this)));
     while (_isRunning.load()) {
         boost::unique_lock<boost::shared_mutex> lock(_sensorDataMutex);
         _client.getLocalBufferContents(_dataKey, &_sensorData);
@@ -79,17 +87,18 @@ FusionCore::angularMeasurementVector FusionCore::angularMeasurementTransfer(angu
     return state;
 }
 
-//TODO dt should be calculated
 void FusionCore::angularThreadFunction() {
+    posix_time::ptime tick = posix_time::second_clock::local_time();
     while (_isRunning.load()) {
         //get reading from sensors
         Vector3d x,y,z;
+        angularMeasurementVector angularMeasurement;
         boost::shared_lock<boost::shared_mutex> lock(_sensorDataMutex);
         z << _sensorData.accelerometer[XAXIS], _sensorData.accelerometer[YAXIS], _sensorData.accelerometer[ZAXIS];
         x << _sensorData.magnetometer[XAXIS], _sensorData.magnetometer[YAXIS], _sensorData.magnetometer[ZAXIS];
-        _angularMeasurement(4,0) = _sensorData.gyro[XAXIS];
-        _angularMeasurement(5,0) = _sensorData.gyro[YAXIS];
-        _angularMeasurement(6,0) = _sensorData.gyro[ZAXIS];
+        angularMeasurement(4,0) = _sensorData.gyro[XAXIS];
+        angularMeasurement(5,0) = _sensorData.gyro[YAXIS];
+        angularMeasurement(6,0) = _sensorData.gyro[ZAXIS];
         lock.unlock();
 
         //turn into measurement vector
@@ -98,14 +107,19 @@ void FusionCore::angularThreadFunction() {
 
         Quaterniond measuredQuat = rotationBetweenSystems(Vector3d::UnitX(), Vector3d::UnitY(), Vector3d::UnitZ(),
                                                           x,                 y,                 z);
-        _angularMeasurement(0,0) = measuredQuat.w();
-        _angularMeasurement(1,0) = measuredQuat.x();
-        _angularMeasurement(2,0) = measuredQuat.y();
-        _angularMeasurement(3,0) = measuredQuat.z();
+        angularMeasurement(0,0) = measuredQuat.w();
+        angularMeasurement(1,0) = measuredQuat.x();
+        angularMeasurement(2,0) = measuredQuat.y();
+        angularMeasurement(3,0) = measuredQuat.z();
 
         //step
+        posix_time::ptime now = posix_time::second_clock::local_time();
+        posix_time::time_duration diff = now - tick;
+        tick = posix_time::second_clock::local_time();
+        double dt = diff.total_microseconds() / 1000000;    //conversion from microseconds to seconds
+
         angularStateVector previous = _angularFilter.state();
-        angularStateVector current = _angularFilter.step(Eigen::MatrixXd::Zero(ANGULAR_CONTROL_DIM, 1), _angularMeasurement);
+        angularStateVector current = _angularFilter.step(Eigen::MatrixXd::Zero(ANGULAR_CONTROL_DIM, 1), angularMeasurement, dt);
 
         _angularData.pos[0] = current(0,0);
         _angularData.pos[1] = current(1,0);
@@ -116,15 +130,51 @@ void FusionCore::angularThreadFunction() {
         _angularData.vel[1] = current(5,0);
         _angularData.vel[2] = current(6,0);
 
-        _angularData.acc[0] = (current(4,0) - previous(4,0)) / ANGULAR_DELAY;
-        _angularData.acc[1] = (current(5,0) - previous(5,0)) / ANGULAR_DELAY;
-        _angularData.acc[2] = (current(6,0) - previous(6,0)) / ANGULAR_DELAY;
+        _angularData.acc[0] = (current(4,0) - previous(4,0)) / dt;
+        _angularData.acc[1] = (current(5,0) - previous(5,0)) / dt;
+        _angularData.acc[2] = (current(6,0) - previous(6,0)) / dt;
 
         //update angular state through dsm client
         _client.setLocalBufferContents(_angularKey, &_angularData);
 
         //sleep
         boost::this_thread::sleep_for(boost::chrono::milliseconds(ANGULAR_DELAY));
+    }
+}
+
+void FusionCore::linearThreadFunction() {
+    posix_time::ptime tick = posix_time::second_clock::local_time();
+    while (_isRunning.load()) {
+        posix_time::ptime now = posix_time::second_clock::local_time();
+        posix_time::time_duration diff = now - tick;
+        tick = posix_time::second_clock::local_time();
+        double dt = diff.total_microseconds() / 1000000;    //conversion from microseconds to seconds
+
+        //get reading from sensors
+        boost::shared_lock<boost::shared_mutex> lock(_sensorDataMutex);
+        _linearData.acc[XAXIS] = _sensorData.accelerometer[XAXIS];
+        _linearData.acc[YAXIS] = _sensorData.accelerometer[YAXIS];
+        _linearData.acc[ZAXIS] = _sensorData.accelerometer[ZAXIS];
+        double pressure = _sensorData.pressureSensor;
+        lock.unlock();
+
+        _linearData.vel[XAXIS] += _linearData.acc[XAXIS] * dt;
+        _linearData.vel[YAXIS] += _linearData.acc[YAXIS] * dt;
+
+        _linearData.pos[XAXIS] += _linearData.vel[XAXIS] * dt;
+        _linearData.pos[YAXIS] += _linearData.vel[YAXIS] * dt;
+
+        double old = _linearData.pos[ZAXIS];
+        double current = pressureToDepth(pressure);
+
+        _linearData.vel[ZAXIS] = (current - old) / dt;
+        _linearData.pos[ZAXIS] = current;
+
+        //update linear state through dsm client
+        _client.setLocalBufferContents(_linearKey, &_linearData);
+
+        //sleep
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(LINEAR_DELAY));
     }
 }
 
@@ -159,4 +209,9 @@ Quaterniond FusionCore::eulerToQuaternion(double x, double y, double z) {
     Eigen::AngleAxisd yaw(z, Vector3d::UnitZ());
     Quaterniond quat = roll*pitch*yaw;
     return quat;
+}
+
+//converts pressure in Bars to depth in meters
+double FusionCore::pressureToDepth(double pressure) {
+    return (pressure - ATMOSPHERIC_PRESSURE_BAR) * BARS_TO_METERS;
 }
