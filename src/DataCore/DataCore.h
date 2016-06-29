@@ -7,7 +7,6 @@
 #include <chrono>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/array.hpp>
 
 #include <eigen3/Eigen/Core>
 
@@ -25,16 +24,15 @@
 
 #define DATACORE_DELAY 10 //milliseconds
 
-template<int NUM_ACCELEROMETERS, int NUM_GYROS, int NUM_MAGNETOMETERS, int NUM_PRESSURE>
 class DataCore {
     public:
         typedef boost::shared_ptr<Sensor<3>> IMUSensor;
         typedef boost::shared_ptr<Sensor<1>> PressureSensor;
 
-        DataCore(boost::array<IMUSensor, NUM_ACCELEROMETERS>* accelerometer,
-                 boost::array<IMUSensor, NUM_GYROS>* gyro,
-                 boost::array<IMUSensor, NUM_MAGNETOMETERS>* magnetometer,
-                 boost::array<PressureSensor, NUM_PRESSURE>* pressureSensor,
+        DataCore(IMUSensor accelerometer,
+                 IMUSensor gyro,
+                 IMUSensor magnetometer,
+                 PressureSensor pressureSensor,
                  uint8_t serverID,
                  uint8_t clientID);
         ~DataCore() {}
