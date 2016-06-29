@@ -22,6 +22,8 @@ set(DSM_SOURCES "${PROJECT_SOURCE_DIR}/src/Dependencies/DistributedSharedMemory/
 file(GLOB DATACORE_SOURCES "${PROJECT_SOURCE_DIR}/src/DataCore/*.cpp")
 set(DATACORE_TEST_SOURCES "${PROJECT_SOURCE_DIR}/test/DataCore_test.cpp")
 
+file(GLOB FUSIONCORE_SOURCES "${PROJECT_SOURCE_DIR}/src/FusionCore/*.cpp")
+
 # DataCore target
 set(PROJECT_DATACORE_NAME DataCore)
 add_executable(${PROJECT_DATACORE_NAME} ${DATACORE_SOURCES} ${DSM_SOURCES})
@@ -31,3 +33,7 @@ target_link_libraries(${PROJECT_DATACORE_NAME} ${DSM_LIBRARIES})
 set(PROJECT_DATACORE_TEST_NAME DataCore_test)
 add_executable(${PROJECT_DATACORE_TEST_NAME} ${DATACORE_TEST_SOURCES} ${DSM_SOURCES})
 target_link_libraries(${PROJECT_DATACORE_TEST_NAME} ${DSM_LIBRARIES})
+
+set(PROJECT_FUSIONCORE_NAME FusionCore)
+add_executable(${PROJECT_FUSIONCORE_NAME} ${FUSIONCORE_SOURCES} ${DSM_SOURCES})
+target_link_libraries(${PROJECT_FUSIONCORE_NAME} ${DSM_LIBRARIES})

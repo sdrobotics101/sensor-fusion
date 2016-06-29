@@ -121,8 +121,10 @@ void FusionCore::angularThreadFunction() {
         tick = posix_time::second_clock::local_time();
         double dt = diff.total_microseconds() / 1000000;    //conversion from microseconds to seconds
 
+        angularControlVector control;
+
         angularStateVector previous = _angularFilter.state();
-        angularStateVector current = _angularFilter.step(Eigen::MatrixXd::Zero(ANGULAR_CONTROL_DIM, 1), angularMeasurement, dt);
+        angularStateVector current = _angularFilter.step(control, angularMeasurement, dt);
 
         _angularData.pos[0] = current(0,0);
         _angularData.pos[1] = current(1,0);
