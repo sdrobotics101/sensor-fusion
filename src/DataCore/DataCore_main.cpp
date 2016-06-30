@@ -39,14 +39,16 @@ int main(int argc, char** argv) {
         int samplesize;
         std::string calibratePath;
         std::string configFile;
+        std::string generatePath;
 
         po::options_description generalOptions("Options");
         generalOptions.add_options()
-            ("help,h", "print help message")
-            ("calibrate", "enter calibration mode")
-            ("samplesize", po::value<int>(&samplesize), "calibration sample size")
-            ("calpath", po::value<std::string>(&calibratePath), "save calibration files to the provided directory")
-            ("config", po::value<std::string>(&configFile), "the configuration file to use")
+            ("help,h",     "print help message")
+            ("calibrate",  "enter calibration mode")
+            ("samplesize", po::value<int>(&samplesize),            "calibration sample size")
+            ("calpath",    po::value<std::string>(&calibratePath), "save calibration files to the provided directory")
+            ("config",     po::value<std::string>(&configFile),    "the configuration file to use")
+            ("generate",   po::value<std::string>(&generatePath),  "generate a default config file")
             ;
 
         po::variables_map vm;
@@ -70,7 +72,15 @@ int main(int argc, char** argv) {
             if (vm.count("calpath")) {
                 settings.calibrationPath = calibratePath;
             }
-        } else {
+        } else if (vm.count("generate")) {
+            settings.serverID = SERVER_ID;
+            settings.clientID = CLIENT_ID;
+            settings.calibrationSampleSize = SAMPLESIZE;
+            settings.calibrationPath = CALIBRATEPATH;
+            settings.save(generatePath);
+            return 0;
+        }
+        else {
             settings.serverID = SERVER_ID;
             settings.clientID = CLIENT_ID;
             for (int i = 0; i < NUM_ACCL; i++) {

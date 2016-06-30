@@ -53,8 +53,6 @@ void IMUSensorSettings::load(const std::string &filename) {
 }
 
 void IMUSensorSettings::save(const std::string &filename) {
-    pt::ptree tree;
-
     pt::ptree biasNode;
     biasNode.put("X", bias[XAXIS]);
     biasNode.put("Y", bias[YAXIS]);
@@ -73,6 +71,7 @@ void IMUSensorSettings::save(const std::string &filename) {
     correctionNode.put("32", correction[2][1]);
     correctionNode.put("33", correction[2][2]);
 
+    pt::ptree tree;
     tree.add_child("bias", biasNode);
     tree.add_child("correction", correctionNode);
 
