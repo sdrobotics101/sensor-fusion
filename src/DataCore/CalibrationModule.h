@@ -12,6 +12,7 @@
 #include <eigen3/Eigen/Core>
 
 #include "../Utilities/Sensor.h"
+#include "../Utilities/IMUSensorConfig.h"
 
 #define XAXIS 0
 #define YAXIS 1
@@ -171,16 +172,18 @@ void
 CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::
 writeFiles() {
     for (int i = 0; i < NUM_ACCL; i++) {
-        std::ofstream file;
-        file.open(_path+"/accelerometers/"+(*_accelerometers)[i]->descriptor());
-        file << _acclTotals[i](XAXIS,0) << "\n" << _acclTotals[i](YAXIS,0) << "\n" << _acclTotals[i](ZAXIS,0);
-        file.close();
+        IMUSensorSettings settings;
+        settings.bias[XAXIS] = _acclTotals[i](XAXIS,0);
+        settings.bias[YAXIS] = _acclTotals[i](YAXIS,0);
+        settings.bias[ZAXIS] = _acclTotals[i](ZAXIS,0);
+        settings.save(_path+"/accelerometers/"+(*_accelerometers)[i]->descriptor());
     }
     for (int i = 0; i < NUM_GYRO; i++) {
-        std::ofstream file;
-        file.open(_path+"/gyros/"+(*_gyros)[i]->descriptor());
-        file << _gyroTotals[i](XAXIS,0) << "\n" << _gyroTotals[i](YAXIS,0) << "\n" << _gyroTotals[i](ZAXIS,0);
-        file.close();
+        IMUSensorSettings settings;
+        settings.bias[XAXIS] = _gyroTotals[i](XAXIS,0);
+        settings.bias[YAXIS] = _gyroTotals[i](YAXIS,0);
+        settings.bias[ZAXIS] = _gyroTotals[i](ZAXIS,0);
+        settings.save(_path+"/gyros/"+(*_gyros)[i]->descriptor());
     }
 }
 
@@ -213,6 +216,9 @@ template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
 void
 CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::
 dynamicCalibrate() {
+    //create a dsm client
+    //send data over the network for some period
+    //calculate calibration offboard
     return;
 }
 
