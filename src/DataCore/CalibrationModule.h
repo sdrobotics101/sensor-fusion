@@ -2,7 +2,9 @@
 #define CALIBRATION_MODULE_H
 
 #include <iostream>
+#include <fstream>
 #include <cstdio>
+#include <string>
 
 #include <boost/array.hpp>
 #include <boost/thread.hpp>
@@ -17,10 +19,12 @@
 
 #define PROMPT_STATIC 0
 #define PROMPT_DYNAMIC 1
-#define PROMPT_FINISHED 2
+#define PROMPT_SUMMARIZE 2
+#define PROMPT_WRITE 3
 
 #define SAMPLE_DELAY 10 //milliseconds
 
+//TODO magnetometer
 template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
 class CalibrationModule {
     public:
@@ -29,13 +33,16 @@ class CalibrationModule {
         CalibrationModule(boost::array<IMUSensor, NUM_ACCL>* accelerometers,
                           boost::array<IMUSensor, NUM_GYRO>* gyros,
                           boost::array<IMUSensor, NUM_MAGN>* magnetometers,
-                          int numSamples);
+                          int numSamples,
+                          std::string path);
         ~CalibrationModule() {}
 
         void start();
 
     private:
         void prompt(int which);
+        void summarize();
+        void writeFiles();
         void staticCalibrate();
         void dynamicCalibrate();
 
@@ -44,10 +51,10 @@ class CalibrationModule {
         boost::array<IMUSensor, NUM_MAGN>* _magnetometers;
 
         int _numSamples;
+        std::string _path;
 
         boost::array<IMUData, NUM_ACCL> _acclTotals;
         boost::array<IMUData, NUM_GYRO> _gyroTotals;
-        boost::array<IMUData, NUM_MAGN> _magnTotals;
 };
 
 template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
@@ -55,20 +62,19 @@ CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::
 CalibrationModule(boost::array<IMUSensor, NUM_ACCL>* accelerometers,
                   boost::array<IMUSensor, NUM_GYRO>* gyros,
                   boost::array<IMUSensor, NUM_MAGN>* magnetometers,
-                  int numSamples) :
+                  int numSamples,
+                  std::string path) :
                   _accelerometers(accelerometers),
                   _gyros(gyros),
                   _magnetometers(magnetometers),
-                  _numSamples(numSamples)
+                  _numSamples(numSamples),
+                  _path(path)
 {
     for (int i = 0; i < NUM_ACCL; i++) {
         _acclTotals[i] << 0,0,0;
     }
     for (int i = 0; i < NUM_GYRO; i++) {
         _gyroTotals[i] << 0,0,0;
-    }
-    for (int i = 0; i < NUM_MAGN; i++) {
-        _magnTotals[i] << 0,0,0;
     }
 }
 
@@ -80,7 +86,8 @@ start() {
     staticCalibrate();
     prompt(PROMPT_DYNAMIC);
     dynamicCalibrate();
-    prompt(PROMPT_FINISHED);
+    prompt(PROMPT_SUMMARIZE);
+    prompt(PROMPT_WRITE);
 }
 
 template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
@@ -90,20 +97,93 @@ prompt(int which) {
     switch (which) {
         case PROMPT_STATIC:
             std::cout << "Calibrating " << NUM_ACCL << " accelerometers, " << NUM_GYRO << " gyros, " << NUM_MAGN << " magnetometers." << std::endl;
-            std::cout << "Hold robot steady. Press enter to continue.";
+            std::cout << "Hold robot steady. Press enter to start static calibration.";
             getchar();
+            std::cout << "Starting static calibration... ";
             return;
         case PROMPT_DYNAMIC:
-            std::cout << "Static calibration complete. Press enter to continue.";
+            std::cout << "done" << std::endl;
+            std::cout << "Press enter to start dynamic calibration.";
             getchar();
+            std::cout << "Starting dynamic calibration... ";
             return;
-        case PROMPT_FINISHED:
-            std::cout << "Dynamic calibration complete. Exiting." << std::endl;
+        case PROMPT_SUMMARIZE:
+            std::cout << "done" << std::endl;
+            std::cout << "Would you like to see a calibration summary? (y/n): ";
+            while (1) {
+                char c;
+                std::cin >> c;
+                if (c == 'y') {
+                    summarize();
+                    return;
+                } else if (c == 'n') {
+                    return;
+                } else {
+                    std::cout << "Please enter y or n: ";
+                }
+            }
             return;
+        case PROMPT_WRITE:
+            std::cout << "Would you like to write to file? (y/n): ";
+            while (1) {
+                char c;
+                std::cin >> c;
+                if (c == 'y') {
+                    std::cout << "Writing files...";
+                    writeFiles();
+                    std::cout << " done" << std::endl;
+                    std::cout << "Exiting" << std::endl;
+                    return;
+                } else if (c == 'n') {
+                    std::cout << "Exiting" << std::endl;
+                    return;
+                } else {
+                    std::cout << "Please enter y or n: ";
+                }
+            }
     }
 }
 
-//TODO write to file
+template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
+void
+CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::
+summarize() {
+    std::cout << "Calibration Summary" << std::endl;
+    std::cout << "-------------------" << std::endl;
+    std::cout << "ACCELEROMETERS" << std::endl;
+    for (int i = 0; i < NUM_ACCL; i++) {
+        std::cout << "    " << (*_accelerometers)[i]->descriptor() << ":" << std::endl;
+        std::cout << "        " << "X: " << _acclTotals[i](XAXIS,0) << std::endl;
+        std::cout << "        " << "Y: " << _acclTotals[i](YAXIS,0) << std::endl;
+        std::cout << "        " << "Z: " << _acclTotals[i](ZAXIS,0) << std::endl;
+    }
+    std::cout << "GYROS" << std::endl;
+    for (int i = 0; i < NUM_GYRO; i++) {
+        std::cout << "    " << (*_gyros)[i]->descriptor() << ":" << std::endl;
+        std::cout << "        " << "X: " << _gyroTotals[i](XAXIS,0) << std::endl;
+        std::cout << "        " << "Y: " << _gyroTotals[i](YAXIS,0) << std::endl;
+        std::cout << "        " << "Z: " << _gyroTotals[i](ZAXIS,0) << std::endl;
+    }
+}
+
+template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
+void
+CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::
+writeFiles() {
+    for (int i = 0; i < NUM_ACCL; i++) {
+        std::ofstream file;
+        file.open(_path+"/accelerometers/"+(*_accelerometers)[i]->descriptor());
+        file << _acclTotals[i](XAXIS,0) << "\n" << _acclTotals[i](YAXIS,0) << "\n" << _acclTotals[i](ZAXIS,0);
+        file.close();
+    }
+    for (int i = 0; i < NUM_GYRO; i++) {
+        std::ofstream file;
+        file.open(_path+"/gyros/"+(*_gyros)[i]->descriptor());
+        file << _gyroTotals[i](XAXIS,0) << "\n" << _gyroTotals[i](YAXIS,0) << "\n" << _gyroTotals[i](ZAXIS,0);
+        file.close();
+    }
+}
+
 template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
 void
 CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::
@@ -119,14 +199,12 @@ staticCalibrate() {
         boost::this_thread::sleep_for(boost::chrono::milliseconds(SAMPLE_DELAY));
     }
 
-    //divide by the number of samples to get an average and write to file
+    //divide by the number of samples to get an average
     for (int i = 0; i < NUM_ACCL; i++) {
         _acclTotals[i] /= _numSamples;
-        std::cout << (*_accelerometers)[i]->descriptor() << " " << _acclTotals[i] << std::endl;
     }
     for (int i = 0; i < NUM_GYRO; i++) {
         _gyroTotals[i] /= _numSamples;
-        std::cout << (*_gyros)[i]->descriptor() << " " << _gyroTotals[i] << std::endl;
     }
 }
 
