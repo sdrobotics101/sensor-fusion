@@ -39,17 +39,15 @@ void IMUSensorSettings::load(const std::string &filename) {
     bias[YAXIS] = tree.get_child("bias").get<double>("Y");
     bias[ZAXIS] = tree.get_child("bias").get<double>("Z");
 
-    correction[0][0] = tree.get_child("correction").get<double>("11");
-    correction[0][1] = tree.get_child("correction").get<double>("12");
-    correction[0][2] = tree.get_child("correction").get<double>("13");
-
-    correction[1][0] = tree.get_child("correction").get<double>("21");
-    correction[1][1] = tree.get_child("correction").get<double>("22");
-    correction[1][2] = tree.get_child("correction").get<double>("23");
-
-    correction[2][0] = tree.get_child("correction").get<double>("31");
-    correction[2][1] = tree.get_child("correction").get<double>("32");
-    correction[2][2] = tree.get_child("correction").get<double>("33");
+    int i = 0;
+    for (pt::ptree::value_type &row : tree.get_child("correction")) {
+        int j = 0;
+        for (pt::ptree::value_type &cell : row.second) {
+            correction[i][j] = cell.second.get_value<double>();
+            j++;
+        }
+        i++;
+    }
 }
 
 void IMUSensorSettings::save(const std::string &filename) {
@@ -59,17 +57,15 @@ void IMUSensorSettings::save(const std::string &filename) {
     biasNode.put("Z", bias[ZAXIS]);
 
     pt::ptree correctionNode;
-    correctionNode.put("11", correction[0][0]);
-    correctionNode.put("12", correction[0][1]);
-    correctionNode.put("13", correction[0][2]);
-
-    correctionNode.put("21", correction[1][0]);
-    correctionNode.put("22", correction[1][1]);
-    correctionNode.put("23", correction[1][2]);
-
-    correctionNode.put("31", correction[2][0]);
-    correctionNode.put("32", correction[2][1]);
-    correctionNode.put("33", correction[2][2]);
+    for (int i = 0; i < 3; i++) {
+        pt::ptree row;
+        for (int j = 0; j < 3; j++) {
+            pt::ptree cell;
+            cell.put_value(correction[i][j]);
+            row.push_back(std::make_pair("", cell));
+        }
+        correctionNode.push_back(std::make_pair("", row));
+    }
 
     pt::ptree tree;
     tree.add_child("bias", biasNode);
