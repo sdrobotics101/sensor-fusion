@@ -22,7 +22,7 @@
 #define NUM_MAGN 9
 #define NUM_PRES 2
 
-#define SAMPLESIZE 10;
+#define SAMPLESIZE 10
 #define CALIBRATEPATH "/Users/rahulsalvi/Desktop"
 
 namespace po = boost::program_options;
@@ -36,6 +36,7 @@ void signalHandler(int signum) {
 //TODO use program options for calibration mode and config file locations
 int main(int argc, char** argv) {
     try {
+        int samplesize;
         std::string calibratePath;
         std::string configFile;
 
@@ -43,6 +44,7 @@ int main(int argc, char** argv) {
         generalOptions.add_options()
             ("help,h", "print help message")
             ("calibrate", "enter calibration mode")
+            ("samplesize", po::value<int>(&samplesize), "calibration sample size")
             ("calpath", po::value<std::string>(&calibratePath), "save calibration files to the provided directory")
             ("config", po::value<std::string>(&configFile), "the configuration file to use")
             ;
@@ -56,11 +58,15 @@ int main(int argc, char** argv) {
 
         if (vm.count("help")) {
             std::cout << generalOptions;
+            return 0;
         }
 
         DatacoreSettings<NUM_ACCL, NUM_GYRO, NUM_MAGN, NUM_PRES> settings;
         if (vm.count("config")) {
             settings.load(configFile);
+            if (vm.count("samplesize")) {
+                settings.calibrationSampleSize = samplesize;
+            }
             if (vm.count("calpath")) {
                 settings.calibrationPath = calibratePath;
             }
@@ -80,7 +86,11 @@ int main(int argc, char** argv) {
                 settings.enabledPres[i] = true;
             }
             if (vm.count("calibrate")) {
-                settings.calibrationSampleSize = SAMPLESIZE;
+                if (vm.count("samplesize")) {
+                    settings.calibrationSampleSize = samplesize;
+                } else {
+                    settings.calibrationSampleSize = SAMPLESIZE;
+                }
                 if (vm.count("calpath")) {
                     settings.calibrationPath = calibratePath;
                 } else {
