@@ -96,13 +96,13 @@ void FusionCore::angularThreadFunction() {
         //get reading from sensors
         Vector3d x,y,z;
         angularMeasurementVector angularMeasurement;
-        boost::shared_lock<boost::shared_mutex> lock(_sensorDataMutex);
+        boost::shared_lock<boost::shared_mutex> dataLock(_sensorDataMutex);
         z << _sensorData.accelerometer[XAXIS], _sensorData.accelerometer[YAXIS], _sensorData.accelerometer[ZAXIS];
         x << _sensorData.magnetometer[XAXIS], _sensorData.magnetometer[YAXIS], _sensorData.magnetometer[ZAXIS];
         angularMeasurement(4,0) = _sensorData.gyro[XAXIS];
         angularMeasurement(5,0) = _sensorData.gyro[YAXIS];
         angularMeasurement(6,0) = _sensorData.gyro[ZAXIS];
-        lock.unlock();
+        dataLock.unlock();
 
         //turn into measurement vector
         y = z.cross(x);
@@ -126,10 +126,11 @@ void FusionCore::angularThreadFunction() {
         angularStateVector previous = _angularFilter.state();
         angularStateVector current = _angularFilter.step(control, angularMeasurement, dt);
 
-        _angularData.pos[0] = current(0,0);
-        _angularData.pos[1] = current(1,0);
-        _angularData.pos[2] = current(2,0);
-        _angularData.pos[3] = current(3,0);
+        boost::unique_lock<boost::mutex> angularLock(_angularDataMutex);
+        _angularData.pos[QUAT_W] = current(0,0);
+        _angularData.pos[QUAT_X] = current(1,0);
+        _angularData.pos[QUAT_Y] = current(2,0);
+        _angularData.pos[QUAT_Z] = current(3,0);
 
         _angularData.vel[XAXIS] = current(4,0);
         _angularData.vel[YAXIS] = current(5,0);
@@ -138,6 +139,7 @@ void FusionCore::angularThreadFunction() {
         _angularData.acc[XAXIS] = (current(4,0) - previous(4,0)) / dt;
         _angularData.acc[YAXIS] = (current(5,0) - previous(5,0)) / dt;
         _angularData.acc[ZAXIS] = (current(6,0) - previous(6,0)) / dt;
+        angularLock.unlock();
 
         //update angular state through dsm client
         _client.setLocalBufferContents(_angularKey, &_angularData);
@@ -147,7 +149,6 @@ void FusionCore::angularThreadFunction() {
     }
 }
 
-//TODO needs to account for orientation
 void FusionCore::linearThreadFunction() {
     posix_time::ptime tick = posix_time::second_clock::local_time();
     while (_isRunning.load()) {
@@ -157,15 +158,33 @@ void FusionCore::linearThreadFunction() {
         double dt = diff.total_microseconds() / 1000000;    //conversion from microseconds to seconds
 
         //get reading from sensors
-        boost::shared_lock<boost::shared_mutex> lock(_sensorDataMutex);
-        _linearData.acc[XAXIS] = _sensorData.accelerometer[XAXIS];
-        _linearData.acc[YAXIS] = _sensorData.accelerometer[YAXIS];
-        _linearData.acc[ZAXIS] = _sensorData.accelerometer[ZAXIS];
-        double pressure = _sensorData.pressureSensor;
-        lock.unlock();
+        Vector3d acceleration;
+        double pressure;
+        Quaterniond orientation;
 
-        _linearData.vel[XAXIS] += _linearData.acc[XAXIS] * dt;
-        _linearData.vel[YAXIS] += _linearData.acc[YAXIS] * dt;
+        boost::shared_lock<boost::shared_mutex> dataLock(_sensorDataMutex);
+        acceleration(XAXIS,0) = _sensorData.accelerometer[XAXIS];
+        acceleration(YAXIS,0) = _sensorData.accelerometer[YAXIS];
+        acceleration(ZAXIS,0) = _sensorData.accelerometer[ZAXIS];
+        pressure = _sensorData.pressureSensor;
+        dataLock.unlock();
+
+        boost::unique_lock<boost::mutex> angularLock(_angularDataMutex);
+        orientation.w() = _angularData.pos[QUAT_W];
+        orientation.x() = _angularData.pos[QUAT_X];
+        orientation.y() = _angularData.pos[QUAT_Y];
+        orientation.z() = _angularData.pos[QUAT_Z];
+        angularLock.unlock();
+
+        _linearData.acc[XAXIS] = acceleration(XAXIS,0);
+        _linearData.acc[YAXIS] = acceleration(YAXIS,0);
+        _linearData.acc[ZAXIS] = acceleration(ZAXIS,0);
+
+        //TODO conjugate?
+        acceleration -= (orientation._transformVector((9.81 * Vector3d::UnitZ())));
+
+        _linearData.vel[XAXIS] += acceleration(XAXIS,0) * dt;
+        _linearData.vel[YAXIS] += acceleration(YAXIS,0) * dt;
 
         _linearData.pos[XAXIS] += _linearData.vel[XAXIS] * dt;
         _linearData.pos[YAXIS] += _linearData.vel[YAXIS] * dt;

@@ -22,6 +22,11 @@
 #define YAXIS 1
 #define ZAXIS 2
 
+#define QUAT_W 0
+#define QUAT_X 1
+#define QUAT_Y 2
+#define QUAT_Z 3
+
 #define ANGULAR_STATE_DIM 7
 #define ANGULAR_MEASUREMENT_DIM 7
 #define ANGULAR_CONTROL_DIM 0
@@ -99,6 +104,7 @@ class FusionCore {
             double vel[3];
             double acc[3];
         } _angularData;
+        boost::mutex _angularDataMutex;
 
         struct LinearData {
             double pos[3];
