@@ -4,7 +4,7 @@ project(${PROJECT_NAME_STR})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -std=c++11")
 
-find_package(Boost REQUIRED COMPONENTS system thread)
+find_package(Boost REQUIRED COMPONENTS system thread program_options)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
@@ -27,7 +27,7 @@ file(GLOB FUSIONCORE_SOURCES "${PROJECT_SOURCE_DIR}/src/FusionCore/*.cpp")
 # DataCore target
 set(PROJECT_DATACORE_NAME DataCore)
 add_executable(${PROJECT_DATACORE_NAME} ${DATACORE_SOURCES} ${DSM_SOURCES})
-target_link_libraries(${PROJECT_DATACORE_NAME} ${DSM_LIBRARIES})
+target_link_libraries(${PROJECT_DATACORE_NAME} ${DSM_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 # DataCore test target
 set(PROJECT_DATACORE_TEST_NAME DataCore_test)
