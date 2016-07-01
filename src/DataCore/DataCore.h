@@ -10,6 +10,8 @@
 
 #include <eigen3/Eigen/Core>
 
+#include "DataCoreConstants.h"
+#include "../Utilities/UniversalConstants.h"
 #include "../Utilities/Sensor.h"
 #include "../Dependencies/DistributedSharedMemory/src/Client/DSMClient.h"
 
@@ -18,17 +20,6 @@
 #else
 #include "../Dependencies/Log/src/LogDisabled.h"
 #endif
-
-#define XAXIS 0
-#define YAXIS 1
-#define ZAXIS 2
-
-#define ACCL 0
-#define GYRO 1
-#define MAGN 2
-#define PRES 3
-
-#define DATACORE_DELAY 10 //milliseconds
 
 class DataCore {
     public:

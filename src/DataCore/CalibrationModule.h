@@ -11,19 +11,14 @@
 
 #include <eigen3/Eigen/Core>
 
+#include "DataCoreConstants.h"
 #include "../Utilities/Sensor.h"
 #include "../Utilities/IMUSensorConfig.h"
-
-#define XAXIS 0
-#define YAXIS 1
-#define ZAXIS 2
 
 #define PROMPT_STATIC 0
 #define PROMPT_DYNAMIC 1
 #define PROMPT_SUMMARIZE 2
 #define PROMPT_WRITE 3
-
-#define SAMPLE_DELAY 10 //milliseconds
 
 //TODO magnetometer
 template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
@@ -199,7 +194,7 @@ staticCalibrate() {
         for (int j = 0; j < NUM_GYRO; j++) {
             _gyroTotals[j] += (*_gyros)[j]->getOutput();
         }
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(SAMPLE_DELAY));
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(CALIBRATION_SAMPLE_DELAY));
     }
 
     //divide by the number of samples to get an average

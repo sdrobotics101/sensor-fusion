@@ -6,9 +6,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#define XAXIS 0
-#define YAXIS 1
-#define ZAXIS 2
+#include "UniversalConstants.h"
 
 namespace pt = boost::property_tree;
 

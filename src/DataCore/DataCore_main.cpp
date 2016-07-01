@@ -9,21 +9,11 @@
 #include <boost/program_options.hpp>
 
 #include "DataCore.h"
+#include "DataCoreConstants.h"
 #include "DataCoreConfig.h"
 #include "CalibrationModule.h"
 #include "../Drivers/Dummy.h"
 #include "../Utilities/MultiSensor.h"
-
-#define SERVER_ID 0
-#define CLIENT_ID 0
-
-#define NUM_ACCL 9
-#define NUM_GYRO 4
-#define NUM_MAGN 9
-#define NUM_PRES 2
-
-#define SAMPLESIZE 10
-#define CALIBRATEPATH "/Users/rahulsalvi/Desktop"
 
 namespace po = boost::program_options;
 
@@ -63,7 +53,7 @@ int main(int argc, char** argv) {
             return 0;
         }
 
-        DatacoreSettings<NUM_ACCL, NUM_GYRO, NUM_MAGN, NUM_PRES> settings;
+        DatacoreSettings<ACCL_COUNT, GYRO_COUNT, MAGN_COUNT, PRES_COUNT> settings;
         if (vm.count("config")) {
             settings.load(configFile);
             if (vm.count("samplesize")) {
@@ -83,18 +73,6 @@ int main(int argc, char** argv) {
         else {
             settings.serverID = SERVER_ID;
             settings.clientID = CLIENT_ID;
-            for (int i = 0; i < NUM_ACCL; i++) {
-                settings.enabledAccl[i] = true;
-            }
-            for (int i = 0; i < NUM_GYRO; i++) {
-                settings.enabledGyro[i] = true;
-            }
-            for (int i = 0; i < NUM_MAGN; i++) {
-                settings.enabledMagn[i] = true;
-            }
-            for (int i = 0; i < NUM_PRES; i++) {
-                settings.enabledPres[i] = true;
-            }
             if (vm.count("calibrate")) {
                 if (vm.count("samplesize")) {
                     settings.calibrationSampleSize = samplesize;
@@ -109,26 +87,26 @@ int main(int argc, char** argv) {
             }
         }
 
-        boost::array<boost::shared_ptr<Sensor<3>>, NUM_ACCL> accelerometers;
-        for (int i = 0; i < NUM_ACCL; i++) {
+        boost::array<boost::shared_ptr<Sensor<3>>, ACCL_COUNT> accelerometers;
+        for (int i = 0; i < ACCL_COUNT; i++) {
             accelerometers[i].reset(new Dummy<3>(i, "accelerometer"+std::to_string(i)));
             accelerometers[i]->setEnabled(settings.enabledAccl[i]);
         }
 
-        boost::array<boost::shared_ptr<Sensor<3>>, NUM_GYRO> gyros;
-        for (int i = 0; i < NUM_GYRO; i++) {
+        boost::array<boost::shared_ptr<Sensor<3>>, GYRO_COUNT> gyros;
+        for (int i = 0; i < GYRO_COUNT; i++) {
             gyros[i].reset(new Dummy<3>(i, "gyro"+std::to_string(i)));
             gyros[i]->setEnabled(settings.enabledGyro[i]);
         }
 
-        boost::array<boost::shared_ptr<Sensor<3>>, NUM_MAGN> magnetometers;
-        for (int i = 0; i < NUM_MAGN; i++) {
+        boost::array<boost::shared_ptr<Sensor<3>>, MAGN_COUNT> magnetometers;
+        for (int i = 0; i < MAGN_COUNT; i++) {
             magnetometers[i].reset(new Dummy<3>(i, "magnetometer"+std::to_string(i)));
             magnetometers[i]->setEnabled(settings.enabledMagn[i]);
         }
 
-        boost::array<boost::shared_ptr<Sensor<1>>, NUM_PRES> pressureSensors;
-        for (int i = 0; i < NUM_PRES; i++) {
+        boost::array<boost::shared_ptr<Sensor<1>>, PRES_COUNT> pressureSensors;
+        for (int i = 0; i < PRES_COUNT; i++) {
             pressureSensors[i].reset(new Dummy<1>(i, "pressure"+std::to_string(i)));
             pressureSensors[i]->setEnabled(settings.enabledPres[i]);
         }
@@ -140,7 +118,7 @@ int main(int argc, char** argv) {
         //END REMOVE THIS
 
         if (vm.count("calibrate")) {
-            CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN> calibrationModule(
+            CalibrationModule<ACCL_COUNT, GYRO_COUNT, MAGN_COUNT> calibrationModule(
                     &accelerometers,
                     &gyros,
                     &magnetometers,
@@ -150,10 +128,10 @@ int main(int argc, char** argv) {
             return 0;
         }
 
-        boost::shared_ptr<Sensor<3>> accelerometer(new MultiSensor<3, NUM_ACCL>(&accelerometers, 0, "multiaccl"));
-        boost::shared_ptr<Sensor<3>> gyro(new MultiSensor<3, NUM_GYRO>(&gyros, 0, "multigyro"));
-        boost::shared_ptr<Sensor<3>> magnetometer(new MultiSensor<3, NUM_MAGN>(&magnetometers, 0, "multimagn"));
-        boost::shared_ptr<Sensor<1>> pressureSensor(new MultiSensor<1, NUM_PRES>(&pressureSensors, 0, "multipressure"));
+        boost::shared_ptr<Sensor<3>> accelerometer(new MultiSensor<3, ACCL_COUNT>(&accelerometers, 0, "multiaccl"));
+        boost::shared_ptr<Sensor<3>> gyro(new MultiSensor<3, GYRO_COUNT>(&gyros, 0, "multigyro"));
+        boost::shared_ptr<Sensor<3>> magnetometer(new MultiSensor<3, MAGN_COUNT>(&magnetometers, 0, "multimagn"));
+        boost::shared_ptr<Sensor<1>> pressureSensor(new MultiSensor<1, PRES_COUNT>(&pressureSensors, 0, "multipressure"));
 
         //REMOVE THIS
         Eigen::Matrix<double, 1, 1> pressureData;

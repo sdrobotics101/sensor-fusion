@@ -1,6 +1,5 @@
 #include "FusionCore.h"
 
-
 FusionCore::FusionCore(uint8_t serverID,
                        uint8_t clientID,
                        angularStateVector initialState,
