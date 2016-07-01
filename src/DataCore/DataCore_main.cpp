@@ -29,7 +29,7 @@ namespace po = boost::program_options;
 
 boost::scoped_ptr<DataCore> _dataCore;
 
-void signalHandler(int signum) {
+void signalHandler(int) {
     _dataCore->stop();
 }
 

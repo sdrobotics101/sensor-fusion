@@ -13,6 +13,12 @@
 #include "../Utilities/Sensor.h"
 #include "../Dependencies/DistributedSharedMemory/src/Client/DSMClient.h"
 
+#ifdef LOGGING_ENABLED
+#include "../Dependencies/Log/src/Log.h"
+#else
+#include "../Dependencies/Log/src/LogDisabled.h"
+#endif
+
 #define XAXIS 0
 #define YAXIS 1
 #define ZAXIS 2
@@ -58,6 +64,10 @@ class DataCore {
             double magnetometer[3];
             double pressureSensor;
         } _sensorData;
+
+#ifdef LOGGING_ENABLED
+        logging::sources::severity_logger_mt<severityLevel> _logger;
+#endif
 };
 
 #endif //DATACORE_H

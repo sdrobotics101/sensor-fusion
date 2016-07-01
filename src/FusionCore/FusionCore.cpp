@@ -68,7 +68,7 @@ void FusionCore::stop() {
 }
 
 //TODO should this update the gyro state using the control vector?
-FusionCore::angularStateVector FusionCore::angularStateTransfer(angularStateVector state, angularControlVector control, double dt) {
+FusionCore::angularStateVector FusionCore::angularStateTransfer(angularStateVector state, angularControlVector /*control*/, double dt) {
     Quaterniond quat;
     quat.w() = state(0,0);
     quat.x() = state(1,0);
