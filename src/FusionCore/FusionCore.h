@@ -20,6 +20,12 @@
 #include "../Dependencies/DistributedSharedMemory/src/Client/DSMClient.h"
 #include "../Dependencies/UnscentedKalmanFilter/src/UnscentedKalmanFilter.h"
 
+#ifdef LOGGING_ENABLED
+#include "../Dependencies/Log/src/Log.h"
+#else
+#include "../Dependencies/Log/src/LogDisabled.h"
+#endif
+
 using Eigen::Matrix;
 using Eigen::Vector3d;
 using Eigen::Quaterniond;
@@ -93,6 +99,10 @@ class FusionCore {
             double vel[3];
             double acc[3];
         } _linearData;
+
+#ifdef LOGGING_ENABLED
+        logging::sources::severity_logger_mt<severityLevel> _logger;
+#endif
 };
 
 #endif //FUSIONCORE_H

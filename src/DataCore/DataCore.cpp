@@ -38,6 +38,10 @@ DataCore::DataCore(
     LOG(_logger, severityLevel::startup) << "CONSTRUCTED DATACORE";
 }
 
+DataCore::~DataCore() {
+    LOG(_logger, severityLevel::teardown) << "DESTRUCTED FUSIONCORE";
+}
+
 void DataCore::start() {
     LOG(_logger, severityLevel::info) << "DATACORE STARTED";
     _isRunning = true;
@@ -79,6 +83,6 @@ void DataCore::start() {
 }
 
 void DataCore::stop() {
-    LOG(_logger, severityLevel::teardown) << "DATACORE STOPPING";
+    LOG(_logger, severityLevel::info) << "DATACORE STOPPED";
     _isRunning = false;
 }

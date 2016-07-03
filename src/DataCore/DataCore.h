@@ -32,7 +32,7 @@ class DataCore {
                  PressureSensor pressureSensor,
                  uint8_t serverID,
                  uint8_t clientID);
-        ~DataCore() {}
+        ~DataCore();
 
         void start();
         void stop();
