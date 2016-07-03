@@ -12,8 +12,9 @@
 #include <eigen3/Eigen/Core>
 
 #include "DataCoreConstants.h"
+#include "../Utilities/UniversalConstants.h"
 #include "../Utilities/Sensor.h"
-#include "../Utilities/IMUSensorConfig.h"
+#include "../Utilities/MatrixConfig.h"
 
 #define PROMPT_STATIC 0
 #define PROMPT_DYNAMIC 1
@@ -167,17 +168,19 @@ void
 CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::
 writeFiles() {
     for (int i = 0; i < NUM_ACCL; i++) {
-        IMUSensorSettings settings;
-        settings.bias[XAXIS] = _acclTotals[i](XAXIS,0);
-        settings.bias[YAXIS] = _acclTotals[i](YAXIS,0);
-        settings.bias[ZAXIS] = _acclTotals[i](ZAXIS,0);
+        MatrixSettings<3,1> settings;
+        settings.name = (*_accelerometers)[i]->descriptor();
+        settings.values[XAXIS][0] = _acclTotals[i](XAXIS,0);
+        settings.values[YAXIS][0] = _acclTotals[i](YAXIS,0);
+        settings.values[ZAXIS][0] = _acclTotals[i](ZAXIS,0);
         settings.save(_path+"/accelerometers/"+(*_accelerometers)[i]->descriptor());
     }
     for (int i = 0; i < NUM_GYRO; i++) {
-        IMUSensorSettings settings;
-        settings.bias[XAXIS] = _gyroTotals[i](XAXIS,0);
-        settings.bias[YAXIS] = _gyroTotals[i](YAXIS,0);
-        settings.bias[ZAXIS] = _gyroTotals[i](ZAXIS,0);
+        MatrixSettings<3,1> settings;
+        settings.name = (*_gyros)[i]->descriptor();
+        settings.values[XAXIS][0] = _gyroTotals[i](XAXIS,0);
+        settings.values[YAXIS][0] = _gyroTotals[i](YAXIS,0);
+        settings.values[ZAXIS][0] = _gyroTotals[i](ZAXIS,0);
         settings.save(_path+"/gyros/"+(*_gyros)[i]->descriptor());
     }
 }
