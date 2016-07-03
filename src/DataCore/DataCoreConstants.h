@@ -11,7 +11,7 @@
 #define PRES_COUNT 2
 
 #define SAMPLESIZE 10
-#define CALIBRATEPATH "/Users/rahulsalvi/Desktop"
+#define CALIBRATEPATH "/Users/rahulsalvi/Dropbox/Robosub/config/Sensors"
 
 //Delays
 #define DATACORE_DELAY 10           //milliseconds

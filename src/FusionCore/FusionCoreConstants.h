@@ -5,6 +5,11 @@
 #define SERVER_ID 0
 #define CLIENT_ID 1
 
+#define ANGULAR_INITIAL_STATE "/Users/rahulsalvi/Dropbox/Robosub/config/Angular/initialstate"
+#define ANGULAR_INITIAL_COVARIANCE "/Users/rahulsalvi/Dropbox/Robosub/config/Angular/initialcovariance"
+#define ANGULAR_PROCESS_NOISE "/Users/rahulsalvi/Dropbox/Robosub/config/Angular/processnoise"
+#define ANGULAR_MEASUREMENT_NOISE "/Users/rahulsalvi/Dropbox/Robosub/config/Angular/measurementnoise"
+
 //Delays
 #define DATA_DELAY 10 //milliseconds
 #define ANGULAR_DELAY 10 //milliseconds

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <csignal>
 #include <string>
+#include <stdexcept>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
@@ -23,7 +24,6 @@ void signalHandler(int) {
     _dataCore->stop();
 }
 
-//TODO use program options for calibration mode and config file locations
 int main(int argc, char** argv) {
     try {
         int samplesize;
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
             ("samplesize", po::value<int>(&samplesize),            "calibration sample size")
             ("calpath",    po::value<std::string>(&calibratePath), "save calibration files to the provided directory")
             ("config",     po::value<std::string>(&configFile),    "the configuration file to use")
-            ("generate",   po::value<std::string>(&generatePath),  "generate a default config file")
+            ("generate",   po::value<std::string>(&generatePath),  "generate a default config file in the specified directory")
             ;
 
         po::variables_map vm;
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
             return 0;
         }
 
-        DatacoreSettings<ACCL_COUNT, GYRO_COUNT, MAGN_COUNT, PRES_COUNT> settings;
+        DataCoreSettings<ACCL_COUNT, GYRO_COUNT, MAGN_COUNT, PRES_COUNT> settings;
         if (vm.count("config")) {
             settings.load(configFile);
             if (vm.count("samplesize")) {
@@ -67,10 +67,9 @@ int main(int argc, char** argv) {
             settings.clientID = CLIENT_ID;
             settings.calibrationSampleSize = SAMPLESIZE;
             settings.calibrationPath = CALIBRATEPATH;
-            settings.save(generatePath);
+            settings.save(generatePath+"/DataCore.json");
             return 0;
-        }
-        else {
+        } else {
             settings.serverID = SERVER_ID;
             settings.clientID = CLIENT_ID;
             if (vm.count("calibrate")) {
@@ -85,6 +84,14 @@ int main(int argc, char** argv) {
                     settings.calibrationPath = CALIBRATEPATH;
                 }
             }
+        }
+
+        if (settings.serverID < 0 || settings.serverID > 255) {
+            throw std::runtime_error("Invalid server ID");
+        }
+
+        if (settings.clientID < 0 || settings.clientID > 255) {
+            throw std::runtime_error("Invalid client ID");
         }
 
         boost::array<boost::shared_ptr<Sensor<3>>, ACCL_COUNT> accelerometers;
@@ -118,6 +125,9 @@ int main(int argc, char** argv) {
         //END REMOVE THIS
 
         if (vm.count("calibrate")) {
+            if (settings.calibrationSampleSize < 1) {
+                throw std::runtime_error("Invalid calibration sample size");
+            }
             CalibrationModule<ACCL_COUNT, GYRO_COUNT, MAGN_COUNT> calibrationModule(
                     &accelerometers,
                     &gyros,

@@ -173,7 +173,7 @@ writeFiles() {
         settings.values[XAXIS][0] = _acclTotals[i](XAXIS,0);
         settings.values[YAXIS][0] = _acclTotals[i](YAXIS,0);
         settings.values[ZAXIS][0] = _acclTotals[i](ZAXIS,0);
-        settings.save(_path+"/accelerometers/"+(*_accelerometers)[i]->descriptor());
+        settings.save(_path+"/accelerometers/"+(*_accelerometers)[i]->descriptor()+".json");
     }
     for (int i = 0; i < NUM_GYRO; i++) {
         MatrixSettings<3,1> settings;
@@ -181,7 +181,7 @@ writeFiles() {
         settings.values[XAXIS][0] = _gyroTotals[i](XAXIS,0);
         settings.values[YAXIS][0] = _gyroTotals[i](YAXIS,0);
         settings.values[ZAXIS][0] = _gyroTotals[i](ZAXIS,0);
-        settings.save(_path+"/gyros/"+(*_gyros)[i]->descriptor());
+        settings.save(_path+"/gyros/"+(*_gyros)[i]->descriptor()+".json");
     }
 }
 

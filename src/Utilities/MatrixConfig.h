@@ -13,8 +13,8 @@ struct MatrixSettings {
     MatrixSettings();
     std::string name;
     double values[X_DIM][Y_DIM];
-    void load(const std::string &filename);
-    void save(const std::string &filename);
+    void load(const std::string& filename);
+    void save(const std::string& filename);
 };
 
 template<int X_DIM, int Y_DIM>
@@ -31,7 +31,7 @@ MatrixSettings() {
 template<int X_DIM, int Y_DIM>
 void
 MatrixSettings<X_DIM, Y_DIM>::
-load(const std::string &filename) {
+load(const std::string& filename) {
     pt::ptree tree;
     pt::read_json(filename, tree);
 
@@ -51,7 +51,7 @@ load(const std::string &filename) {
 template<int X_DIM, int Y_DIM>
 void
 MatrixSettings<X_DIM, Y_DIM>::
-save(const std::string &filename) {
+save(const std::string& filename) {
     pt::ptree valuesNode;
     for (int i = 0; i < X_DIM; i++) {
         pt::ptree row;
