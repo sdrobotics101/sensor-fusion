@@ -5,9 +5,7 @@
 #include <eigen3/Eigen/Core>
 
 #include "FusionCore.h"
-
-#define SERVER_ID 0
-#define CLIENT_ID 1
+#include "FusionCoreConstants.h"
 
 using Eigen::Matrix;
 

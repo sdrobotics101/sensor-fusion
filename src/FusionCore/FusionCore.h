@@ -15,28 +15,10 @@
 #include <eigen3/Eigen/Geometry>
 #include <eigen3/Eigen/Eigenvalues>
 
+#include "../Utilities/UniversalConstants.h"
+#include "FusionCoreConstants.h"
 #include "../Dependencies/DistributedSharedMemory/src/Client/DSMClient.h"
 #include "../Dependencies/UnscentedKalmanFilter/src/UnscentedKalmanFilter.h"
-
-#define XAXIS 0
-#define YAXIS 1
-#define ZAXIS 2
-
-#define QUAT_W 0
-#define QUAT_X 1
-#define QUAT_Y 2
-#define QUAT_Z 3
-
-#define ANGULAR_STATE_DIM 7
-#define ANGULAR_MEASUREMENT_DIM 7
-#define ANGULAR_CONTROL_DIM 0
-
-#define DATA_DELAY 10 //milliseconds
-#define ANGULAR_DELAY 10 //milliseconds
-#define LINEAR_DELAY 10 //milliseconds
-
-#define ATMOSPHERIC_PRESSURE_BAR 1.01325
-#define BARS_TO_METERS 10.1936
 
 using Eigen::Matrix;
 using Eigen::Vector3d;
