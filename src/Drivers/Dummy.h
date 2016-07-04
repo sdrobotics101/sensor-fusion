@@ -13,7 +13,13 @@ class Dummy : public Sensor<OUTPUT_DIM> {
                 }
             };
         virtual ~Dummy() {}
-        Eigen::Matrix<double, OUTPUT_DIM, 1> getOutput() {return _output;}
+        Eigen::Matrix<double, OUTPUT_DIM, 1> getOutput() {
+            if (this->isEnabled()) {
+                return _output;
+            } else {
+                return Eigen::Matrix<double, OUTPUT_DIM, 1>::Zero();
+            }
+        }
         void setOutput(Eigen::Matrix<double, OUTPUT_DIM, 1> in) {_output = in;}
     private:
         Eigen::Matrix<double, OUTPUT_DIM, 1> _output;

@@ -10,19 +10,16 @@
 
 #include <eigen3/Eigen/Core>
 
+#include "DataCoreConstants.h"
+#include "../Utilities/UniversalConstants.h"
 #include "../Utilities/Sensor.h"
 #include "../Dependencies/DistributedSharedMemory/src/Client/DSMClient.h"
 
-#define XAXIS 0
-#define YAXIS 1
-#define ZAXIS 2
-
-#define ACCL 0
-#define GYRO 1
-#define MAGN 2
-#define PRES 3
-
-#define DATACORE_DELAY 10 //milliseconds
+#ifdef LOGGING_ENABLED
+#include "../Dependencies/Log/src/Log.h"
+#else
+#include "../Dependencies/Log/src/LogDisabled.h"
+#endif
 
 class DataCore {
     public:
@@ -35,7 +32,7 @@ class DataCore {
                  PressureSensor pressureSensor,
                  uint8_t serverID,
                  uint8_t clientID);
-        ~DataCore() {}
+        ~DataCore();
 
         void start();
         void stop();
@@ -58,6 +55,10 @@ class DataCore {
             double magnetometer[3];
             double pressureSensor;
         } _sensorData;
+
+#ifdef LOGGING_ENABLED
+        logging::sources::severity_logger_mt<log::severityLevel> _logger;
+#endif
 };
 
 #endif //DATACORE_H

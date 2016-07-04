@@ -7,7 +7,7 @@
 #include "../src/Dependencies/DistributedSharedMemory/src/Client/DSMClient.h"
 
 #define SERVER_ID 0
-#define CLIENT_ID 1
+#define CLIENT_ID 2
 
 std::atomic<bool> isRunning;
 

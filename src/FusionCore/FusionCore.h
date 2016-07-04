@@ -9,28 +9,28 @@
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/shared_mutex.hpp>
+#include <boost/date_time.hpp>
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
 #include <eigen3/Eigen/Eigenvalues>
 
+#include "../Utilities/UniversalConstants.h"
+#include "FusionCoreConstants.h"
 #include "../Dependencies/DistributedSharedMemory/src/Client/DSMClient.h"
 #include "../Dependencies/UnscentedKalmanFilter/src/UnscentedKalmanFilter.h"
 
-#define XAXIS 0
-#define YAXIS 1
-#define ZAXIS 2
-
-#define ANGULAR_STATE_DIM 7
-#define ANGULAR_MEASUREMENT_DIM 7
-#define ANGULAR_CONTROL_DIM 0
-
-#define DATA_DELAY 10 //milliseconds
-#define ANGULAR_DELAY 10 //milliseconds
+#ifdef LOGGING_ENABLED
+#include "../Dependencies/Log/src/Log.h"
+#else
+#include "../Dependencies/Log/src/LogDisabled.h"
+#endif
 
 using Eigen::Matrix;
 using Eigen::Vector3d;
 using Eigen::Quaterniond;
+
+namespace posix_time = boost::posix_time;
 
 class FusionCore {
     public:
@@ -59,11 +59,12 @@ class FusionCore {
         static angularMeasurementVector angularMeasurementTransfer(angularStateVector state);
 
         void angularThreadFunction();
-        /* void linearThreadFunction(); */
+        void linearThreadFunction();
 
         static Quaterniond rotationBetweenSystems(Vector3d x1, Vector3d y1, Vector3d z1,
                                                   Vector3d x2, Vector3d y2, Vector3d z2);
         static Quaterniond eulerToQuaternion(double x, double y, double z);
+        static double pressureToDepth(double pressure);
 
         dsm::Client _client;
         dsm::LocalBufferKey _angularKey;
@@ -71,9 +72,7 @@ class FusionCore {
         dsm::LocalBufferKey _dataKey;
 
         boost::scoped_ptr<boost::thread> _angularThread;
-        /* boost::scoped_ptr<boost::thread> _linearThread; */
-
-        angularMeasurementVector _angularMeasurement;
+        boost::scoped_ptr<boost::thread> _linearThread;
 
         UnscentedKalmanFilter<ANGULAR_STATE_DIM, ANGULAR_MEASUREMENT_DIM, ANGULAR_CONTROL_DIM> _angularFilter;
 
@@ -89,10 +88,21 @@ class FusionCore {
         boost::shared_mutex _sensorDataMutex;
 
         struct AngularData {
-            double pos[4];
+            double pos[4];  //4 because quaternions
             double vel[3];
             double acc[3];
         } _angularData;
+        boost::mutex _angularDataMutex;
+
+        struct LinearData {
+            double pos[3];
+            double vel[3];
+            double acc[3];
+        } _linearData;
+
+#ifdef LOGGING_ENABLED
+        logging::sources::severity_logger_mt<log::severityLevel> _logger;
+#endif
 };
 
 #endif //FUSIONCORE_H
