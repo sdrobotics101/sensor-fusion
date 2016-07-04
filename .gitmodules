@@ -4,3 +4,6 @@
 [submodule "src/Dependencies/UnscentedKalmanFilter"]
 	path = src/Dependencies/UnscentedKalmanFilter
 	url = git@github.com:rahulsalvi/UnscentedKalmanFilter.git
+[submodule "src/Dependencies/Log"]
+	path = src/Dependencies/Log
+	url = git@github.com:rahulsalvi/Log.git
