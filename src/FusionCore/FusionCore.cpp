@@ -44,27 +44,27 @@ FusionCore::FusionCore(uint8_t serverID,
     _client.setLocalBufferContents(_linearKey, &_linearData);
 
 #ifdef LOGGING_ENABLED
-    initializeLog();
-    setLogFilter(severityLevel::trace);
+    log::initializeLog();
+    log::setLogFilter(log::severityLevel::trace);
 #endif
 
-    LOG(_logger, severityLevel::startup) << "CONSTRUCTED FUSIONCORE";
+    LOG(_logger, log::severityLevel::startup) << "CONSTRUCTED FUSIONCORE";
 }
 
 FusionCore::~FusionCore() {
     _isRunning = false;
     _angularThread->join();
     _linearThread->join();
-    LOG(_logger, severityLevel::teardown) << "DESTRUCTED FUSIONCORE";
+    LOG(_logger, log::severityLevel::teardown) << "DESTRUCTED FUSIONCORE";
 }
 
 void FusionCore::start() {
-    LOG(_logger, severityLevel::info) << "FUSIONCORE STARTED";
+    LOG(_logger, log::severityLevel::info) << "FUSIONCORE STARTED";
     _isRunning = true;
     _angularThread.reset(new boost::thread(boost::bind(&FusionCore::angularThreadFunction, this)));
     _linearThread .reset(new boost::thread(boost::bind(&FusionCore::linearThreadFunction,  this)));
     while (_isRunning.load()) {
-        LOG(_logger, severityLevel::periodic) << "GETTING NEW DATA";
+        LOG(_logger, log::severityLevel::periodic) << "GETTING NEW DATA";
         boost::unique_lock<boost::shared_mutex> lock(_sensorDataMutex);
         _client.getLocalBufferContents(_dataKey, &_sensorData);
         lock.unlock();
@@ -73,7 +73,7 @@ void FusionCore::start() {
 }
 
 void FusionCore::stop() {
-    LOG(_logger, severityLevel::info) << "FUSIONCORE STOPPED";
+    LOG(_logger, log::severityLevel::info) << "FUSIONCORE STOPPED";
     _isRunning = false;
 }
 
@@ -101,7 +101,7 @@ FusionCore::angularMeasurementVector FusionCore::angularMeasurementTransfer(angu
 
 //TODO are directions correct?
 void FusionCore::angularThreadFunction() {
-    LOG(_logger, severityLevel::startup) << "ANGULAR THREAD STARTED";
+    LOG(_logger, log::severityLevel::startup) << "ANGULAR THREAD STARTED";
     posix_time::ptime tick = posix_time::second_clock::local_time();
     while (_isRunning.load()) {
         //get reading from sensors
@@ -153,7 +153,7 @@ void FusionCore::angularThreadFunction() {
         angularLock.unlock();
 
         //update angular state through dsm client
-        LOG(_logger, severityLevel::periodic) << "UPDATING GLOBAL ANGULAR STATE";
+        LOG(_logger, log::severityLevel::periodic) << "UPDATING GLOBAL ANGULAR STATE";
         _client.setLocalBufferContents(_angularKey, &_angularData);
 
         //sleep
@@ -162,7 +162,7 @@ void FusionCore::angularThreadFunction() {
 }
 
 void FusionCore::linearThreadFunction() {
-    LOG(_logger, severityLevel::startup) << "LINEAR THREAD STARTED";
+    LOG(_logger, log::severityLevel::startup) << "LINEAR THREAD STARTED";
     posix_time::ptime tick = posix_time::second_clock::local_time();
     while (_isRunning.load()) {
         posix_time::ptime now = posix_time::second_clock::local_time();
@@ -209,7 +209,7 @@ void FusionCore::linearThreadFunction() {
         _linearData.pos[ZAXIS] = current;
 
         //update linear state through dsm client
-        LOG(_logger, severityLevel::periodic) << "UPDATING GLOBAL LINEAR STATE";
+        LOG(_logger, log::severityLevel::periodic) << "UPDATING GLOBAL LINEAR STATE";
         _client.setLocalBufferContents(_linearKey, &_linearData);
 
         //sleep

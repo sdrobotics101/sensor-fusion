@@ -25,7 +25,6 @@
 #define PROMPT_WRITE 4
 #define PROMPT_EXIT 5
 
-//TODO magnetometer
 template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
 class CalibrationModule {
     public:
@@ -252,7 +251,6 @@ staticCalibrate() {
     }
 }
 
-//TODO
 template<int NUM_ACCL, int NUM_GYRO, int NUM_MAGN>
 void
 CalibrationModule<NUM_ACCL, NUM_GYRO, NUM_MAGN>::

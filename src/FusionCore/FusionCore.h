@@ -101,7 +101,7 @@ class FusionCore {
         } _linearData;
 
 #ifdef LOGGING_ENABLED
-        logging::sources::severity_logger_mt<severityLevel> _logger;
+        logging::sources::severity_logger_mt<log::severityLevel> _logger;
 #endif
 };
 
