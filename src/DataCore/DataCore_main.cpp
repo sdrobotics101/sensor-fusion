@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
         generalOptions.add_options()
             ("help,h",     "print help message")
             ("calibrate",  "enter calibration mode")
-            ("samplesize", po::value<int>(&samplesize),            "calibration sample size")
+            ("samplesize", po::value<int>(&samplesize),            "static calibration sample size")
             ("calpath",    po::value<std::string>(&calibratePath), "save calibration files to the provided directory")
             ("config",     po::value<std::string>(&configFile),    "the configuration file to use")
             ("generate",   po::value<std::string>(&generatePath),  "generate a default config file in the specified directory")
@@ -133,7 +133,9 @@ int main(int argc, char** argv) {
                     &gyros,
                     &magnetometers,
                     settings.calibrationSampleSize,
-                    settings.calibrationPath);
+                    settings.calibrationPath,
+                    settings.serverID,
+                    CALIBRATE_CLIENT_ID); //TODO currently no option or config for this
             calibrationModule.start();
             return 0;
         }

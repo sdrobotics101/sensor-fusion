@@ -31,58 +31,58 @@ DataCore::DataCore(
     _client.setLocalBufferContents(_dataKey, &_sensorData);
 
 #ifdef LOGGING_ENABLED
-    initializeLog();
-    setLogFilter(severityLevel::trace);
+    log::initializeLog();
+    log::setLogFilter(log::severityLevel::trace);
 #endif
 
-    LOG(_logger, severityLevel::startup) << "CONSTRUCTED DATACORE";
+    LOG(_logger, log::severityLevel::startup) << "CONSTRUCTED DATACORE";
 }
 
 DataCore::~DataCore() {
-    LOG(_logger, severityLevel::teardown) << "DESTRUCTED FUSIONCORE";
+    LOG(_logger, log::severityLevel::teardown) << "DESTRUCTED FUSIONCORE";
 }
 
 void DataCore::start() {
-    LOG(_logger, severityLevel::info) << "DATACORE STARTED";
+    LOG(_logger, log::severityLevel::info) << "DATACORE STARTED";
     _isRunning = true;
     while (_isRunning.load()) {
-        LOG(_logger, severityLevel::periodic) << "POLLING SENSORS";
+        LOG(_logger, log::severityLevel::periodic) << "POLLING SENSORS";
         Eigen::Matrix<double, 3, 1> imuData;
         Eigen::Matrix<double, 1, 1> pressureData;
 
-        LOG(_logger, severityLevel::periodic) << "POLLING ACCELEROMETER";
+        LOG(_logger, log::severityLevel::periodic) << "POLLING ACCELEROMETER";
         _sensorData.isEnabled[ACCL] = _accelerometer->isEnabled();
         imuData = _accelerometer->getOutput();
         _sensorData.accelerometer[XAXIS] = imuData(XAXIS, 0);
         _sensorData.accelerometer[YAXIS] = imuData(YAXIS, 0);
         _sensorData.accelerometer[ZAXIS] = imuData(ZAXIS, 0);
 
-        LOG(_logger, severityLevel::periodic) << "POLLING GYRO";
+        LOG(_logger, log::severityLevel::periodic) << "POLLING GYRO";
         _sensorData.isEnabled[GYRO] = _gyro->isEnabled();
         imuData = _gyro->getOutput();
         _sensorData.gyro[XAXIS] = imuData(XAXIS, 0);
         _sensorData.gyro[YAXIS] = imuData(YAXIS, 0);
         _sensorData.gyro[ZAXIS] = imuData(ZAXIS, 0);
 
-        LOG(_logger, severityLevel::periodic) << "POLLING MAGNETOMETER";
+        LOG(_logger, log::severityLevel::periodic) << "POLLING MAGNETOMETER";
         _sensorData.isEnabled[MAGN] = _magnetometer->isEnabled();
         imuData = _magnetometer->getOutput();
         _sensorData.magnetometer[XAXIS] = imuData(XAXIS, 0);
         _sensorData.magnetometer[YAXIS] = imuData(YAXIS, 0);
         _sensorData.magnetometer[ZAXIS] = imuData(ZAXIS, 0);
 
-        LOG(_logger, severityLevel::periodic) << "POLLING PRESSURE SENSOR";
+        LOG(_logger, log::severityLevel::periodic) << "POLLING PRESSURE SENSOR";
         _sensorData.isEnabled[PRES] = _pressureSensor->isEnabled();
         pressureData = _pressureSensor->getOutput();
         _sensorData.pressureSensor = pressureData(0, 0);
 
-        LOG(_logger, severityLevel::periodic) << "UPDATING GLOBAL SENSOR DATA";
+        LOG(_logger, log::severityLevel::periodic) << "UPDATING GLOBAL SENSOR DATA";
         _client.setLocalBufferContents(_dataKey, &_sensorData);
         std::this_thread::sleep_for(std::chrono::milliseconds(DATACORE_DELAY));
     }
 }
 
 void DataCore::stop() {
-    LOG(_logger, severityLevel::info) << "DATACORE STOPPED";
+    LOG(_logger, log::severityLevel::info) << "DATACORE STOPPED";
     _isRunning = false;
 }

@@ -4,6 +4,7 @@
 //Defaults
 #define SERVER_ID 0
 #define CLIENT_ID 0
+#define CALIBRATE_CLIENT_ID 255
 
 #define ACCL_COUNT 9
 #define GYRO_COUNT 4
